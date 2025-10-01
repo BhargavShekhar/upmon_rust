@@ -1,0 +1,28 @@
+# Rust build artifacts
+/target/
+
+# Cargo lock (commit if this is an application)
+/Cargo.lock
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+
+# Backup files
+**/*.rs.bk
+**/*.rs.old
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
