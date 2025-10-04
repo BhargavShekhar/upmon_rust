@@ -7,3 +7,4 @@ edition = "2024"
 poem = "3.1.12"
 serde = { version = "1.0.228", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
+store ={ path = "../store"}
