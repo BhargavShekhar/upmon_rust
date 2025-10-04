@@ -5,7 +5,7 @@ use crate::{request_inputs::CreateWebsiteInput, request_outputs::{CreateWebsiteO
 
 #[handler]
 fn create_website(Json(data): Json<CreateWebsiteInput>) -> Json<CreateWebsiteOutput> {
-    let mut s = Store::default().unwrap();
+    let mut s = Store::new().unwrap();
 
     let website = s.create_website(
         String::from("636a7ef1-67c3-4359-af04-19edef3faadf"),
@@ -21,7 +21,7 @@ fn create_website(Json(data): Json<CreateWebsiteInput>) -> Json<CreateWebsiteOut
 
 #[handler]
 fn get_website(Path(id): Path<String>) -> Json<GetWebsiteOutput> {
-    let mut s = Store::default().unwrap();
+    let mut s = Store::new().unwrap();
 
     let websites = s.get_website(id).unwrap();
 

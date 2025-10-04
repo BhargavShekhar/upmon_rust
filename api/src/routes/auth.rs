@@ -5,7 +5,7 @@ use crate::{request_inputs::{CreateUserInput, SigninUserInput}, request_outputs:
 
 #[handler]
 fn sign_up(Json(data): Json<CreateUserInput>) -> Json<CreateUserOutput> {
-    let mut s = Store::default().unwrap();
+    let mut s = Store::new().unwrap();
 
     let id = s.sign_up(data.username, data.password).unwrap();
 
@@ -18,7 +18,7 @@ fn sign_up(Json(data): Json<CreateUserInput>) -> Json<CreateUserOutput> {
 
 #[handler]
 async fn sign_in(Json(data): Json<SigninUserInput>) -> Json<SigninUserOutput> {
-    let mut s = Store::default().unwrap();
+    let mut s = Store::new().unwrap();
 
     let _ = s.sign_in(data.username, data.password).unwrap();
 

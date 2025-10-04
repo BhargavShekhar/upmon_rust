@@ -6,7 +6,7 @@ pub struct Store {
 }
 
 impl Store {
-    pub fn default() -> Result<Self, ConnectionError> {
+    pub fn new() -> Result<Self, ConnectionError> {
         let config = Config::default();
 
         let conn = PgConnection::establish(&config.db_url)?;
