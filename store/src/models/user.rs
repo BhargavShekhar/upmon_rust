@@ -22,9 +22,14 @@ impl Store {
 
         let salt = SaltString::generate(&mut OsRng);
 
-        let argon2 = Argon2::default();
+        let argon2: Argon2<'_> = Argon2::default();
 
-        let hashed_password = argon2.hash_password(password.as_bytes(), &salt).unwrap().to_string();
+        let hashed_password = argon2.hash_password(password.as_bytes(), &salt)
+            .map_err(|e| {
+                eprint!("Password hashing failed: {:?}", e);
+                Error::RollbackTransaction
+            })?
+            .to_string();
 
         let user = User {
             username,
@@ -48,7 +53,14 @@ impl Store {
             .select(User::as_select())
             .first(&mut self.conn)?;
 
-        let parsed_hash= PasswordHash::new(&user_result.password).unwrap();
+        let parsed_hash= match PasswordHash::new(&user_result.password) {
+            Ok(hash) => hash,
+            Err(err) => {
+                eprint!("Error parsing hash {:?}", err);
+                return Err(Error::RollbackTransaction);
+            }
+        };
+
         let argon2 = Argon2::default();
 
         if argon2.verify_password(input_password.as_bytes(), &parsed_hash).is_ok() {

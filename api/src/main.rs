@@ -3,11 +3,12 @@ use std::sync::{Arc, Mutex};
 use poem::{listener::TcpListener, EndpointExt, Route, Server};
 use store::store::Store;
 
-use crate::routes::{auth, website};
+use crate::{config::Config, routes::{auth, website}};
 
 pub mod request_inputs;
 pub mod request_outputs;
 pub mod routes;
+pub mod config;
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
@@ -20,10 +21,13 @@ async fn main() -> Result<(), std::io::Error> {
         )
     );
 
+    let config = Config::from_env();
+
     let app = Route::new()
         .nest("/auth", auth::routes())
         .nest("/website", website::routes())
-        .data(s);
+        .data(s)
+        .data(config.clone());
     
     println!("Server is running on http://{}", addr);
 

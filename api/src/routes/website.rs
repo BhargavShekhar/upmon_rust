@@ -60,4 +60,5 @@ fn get_website(
 pub fn routes() -> Route {
     Route::new()
         .at("/", create_website)
+        .at("/:id", get_website)
 }
