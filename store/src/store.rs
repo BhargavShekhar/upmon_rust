@@ -10,6 +10,7 @@ impl Store {
         let config = Config::default();
 
         let conn = PgConnection::establish(&config.db_url)?;
+        
         Ok(Self {
             conn
         })

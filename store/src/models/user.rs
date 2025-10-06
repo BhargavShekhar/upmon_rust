@@ -1,6 +1,11 @@
 use crate::store::Store;
 use diesel::{prelude::*, result::Error};
+use rand::rngs::OsRng;
 use uuid::Uuid;
+use argon2::{
+    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    Argon2,
+};
 
 #[derive(Queryable, Selectable, Insertable)]
 #[diesel(table_name = crate::schema::user)]
@@ -11,27 +16,31 @@ pub struct User {
     pub password: String,
 }
 
-impl Store {
+impl Store {    
     pub fn sign_up(&mut self, username: String, password: String) -> Result<String, Error> {
-        let id = Uuid::new_v4();
+        let id = Uuid::new_v4().to_string();
 
-        // TODO add encryption in password
+        let salt = SaltString::generate(&mut OsRng);
+
+        let argon2 = Argon2::default();
+
+        let hashed_password = argon2.hash_password(password.as_bytes(), &salt).unwrap().to_string();
 
         let user = User {
             username,
-            password,
-            id: id.to_string(),
+            password: hashed_password,
+            id
         };
 
-        let _ = diesel::insert_into(crate::schema::user::table)
+        diesel::insert_into(crate::schema::user::table)
             .values(&user)
             .returning(User::as_returning())
-            .get_result(&mut self.conn);
+            .get_result(&mut self.conn)?;
 
         Ok(user.id)
     }
 
-    pub fn sign_in(&mut self, input_username: String, input_password: String) -> Result<bool, Error> {
+    pub fn sign_in(&mut self, input_username: String, input_password: String) -> Result<String, Error> {
         use crate::schema::user::dsl::*;
 
         let user_result = user
@@ -39,7 +48,15 @@ impl Store {
             .select(User::as_select())
             .first(&mut self.conn)?;
 
-        if user_result.password != input_password { Ok(false) }
-        else { Ok(true) }
+        let parsed_hash= PasswordHash::new(&user_result.password).unwrap();
+        let argon2 = Argon2::default();
+
+        if argon2.verify_password(input_password.as_bytes(), &parsed_hash).is_ok() {
+            Ok(user_result.id)
+        }
+        
+        else {
+            Err(Error::NotFound)
+        }
     }
 }
